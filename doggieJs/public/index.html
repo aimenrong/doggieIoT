@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Doggie</title>
+	<meta http-equiv="X-UA-Compatible" content="chrome=1">
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+	<script src="./js/setting.js"></script>
+	<script src="./js/mqttws31.js"></script>
+	<script src="./js/mqttClient.js"></script>
+	<script src="./js/jquery-3.2.1.min.js"></script>
+	<script src="./js/popper.min.js"></script>
+	<script src="./js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://cache.amap.com/lbs/static/addToolbar.js"></script>
+	
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+	<link rel="stylesheet" href="css/mycss.css">
+	<link rel="stylesheet" href="css/map.css">
+	<script type="text/javascript">
+		$(document).ready(function(){  
+			$('#menuNotification').click(function(){
+				$('#notificationModal').modal();
+			});
+			$('#menuSubscription').click(function(){
+				$('#subscriptionListModal').modal();
+			});
+			$('#menuSetting').click(function(){
+				$("#txt_host").val(brokerHost);
+				$("#txt_port").val(brokerPort);
+				$('#settingModal').modal();
+			});
+			$('#menuConnect').click(function(){
+				if ($('#menuConnect').text() == 'Disconnect' || $('#menuConnect').text() == 'Failure') {
+					doDisconnect();
+					$('#menuConnect').text('Connect');
+				} else {
+					connectToHost(brokerHost, brokerPort);
+					$('#menuConnect').text('Disconnect');
+				}
+			});
+			$('#btn_submit').click(function(){
+				var longitude = $("#txt_longitude").val();
+				var latitude = $("#txt_latitude").val();
+				var noContent =  $("#txt_noContent").val();
+				submitNotification(longitude, latitude, noContent);
+			});
+			$('#btn_save_setting').click(function(){
+				var host = $("#txt_host").val();
+				var port = $("#txt_port").val();
+				saveSetting(host, port);
+			});
+			//setInterval(getLocation, 3000);
+		}); 
+		
+	</script>
+</head>
+</head>
+<body>
+	<div class="navbar navbar-duomi navbar-static-top" role="navigation">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<a class="navbar-brand" href="#" id="logo">Portal
+				</a>
+			</div>
+		</div>
+	</div>
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-12">
+				<ul id="main-nav" class="nav nav-tabs nav-stacked" style="">
+					<li class="active">
+						<div id="status">
+						</li>
+						<li>
+							<a href="#" id="menuConnect">
+								<i class="glyphicon glyphicon-credit-card"></i>
+								Connect
+							</a>
+						</li>
+						<li>
+							<a href="#" id="menuSetting">
+								<i class="glyphicon glyphicon-credit-card"></i>
+								Setting
+							</a>
+						</li>
+						<li>
+							<a href="#" id="menuSubscription">
+								<i class="glyphicon glyphicon-globe"></i>
+								Subscription
+							</a>
+						</li>
+						<li >
+							<a href="#" id="menuNotification">
+								<i class="glyphicon glyphicon-calendar"></i>
+								Notification
+							</a>
+						</li>
+						<li>
+							<a href="#" id="menuEventHistory">
+								<i class="glyphicon glyphicon-fire"></i>
+								Event History
+							</a>
+						</li>
+					</ul>
+				</div>
+				
+			</div>
+		</div> 
+		<div id="mapContainer" />
+		<script src="./js/gpsEventSender.js"></script>
+		<script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.0&key=4d015c2023dd28671fe6d997426d6f3f&plugin=AMap.Autocomplete"></script>
+		<script type="text/javascript">
+			var map = new AMap.Map('mapContainer', {
+				resizeEnable: true,
+				zoom: 10,
+				center: [113.257978, 23.127072]
+			});
+			var geocoder;
+			AMap.service('AMap.Geocoder',function(){
+				geocoder = new AMap.Geocoder({
+					city: "010"
+				});
+			});
+			var clickEventListener = map.on('click', function(e) {
+				var longitude = e.lnglat.getLng();
+				var latitude = e.lnglat.getLat();
+				console.log("longitude : " + longitude);
+				console.log("latitude : " + latitude);
+				$("#myModalLabel").text("Create Subscription");
+				$("#txt_longitude").val(longitude);
+				$("#txt_latitude").val(latitude);
+				var lnglatXY=[longitude, latitude];
+				geocoder.getAddress(lnglatXY, function(status, result) {
+					if (status === 'complete' && result.info === 'OK') {
+						$("#txt_address").val(result.regeocode.formattedAddress);
+						$('#subscriptionModal').modal();
+					} else{
+						alert(result);
+					}
+				}); 
+			});
+			var auto = new AMap.Autocomplete({
+				input: "tipinput"
+			});
+			AMap.event.addListener(auto, "select", select);
+			function select(e) {
+				if (e.poi && e.poi.location) {
+					map.setZoom(15);
+					map.setCenter(e.poi.location);
+				}
+			}
+
+			map.plugin('AMap.Geolocation', function() {
+				geolocation = new AMap.Geolocation({
+					enableHighAccuracy: true,
+					timeout: 10000,          
+					buttonOffset: new AMap.Pixel(10, 20),
+					zoomToAccuracy: true,     
+					buttonPosition:'RB'
+				});
+				map.addControl(geolocation);
+				geolocation.getCurrentPosition();
+				AMap.event.addListener(geolocation, 'complete', onComplete);
+				AMap.event.addListener(geolocation, 'error', onError);     
+			});
+			
+		</script>
+		
+		<div class="modal fade" id="subscriptionModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+						<h4 class="modal-title" id="myModalLabel">Create Subscription</h4>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<label for="txt_longitude">Longitude</label>
+							<input type="text" name="txt_longitude" class="form-control" id="txt_longitude" placeholder="Longitude">
+						</div>
+						<div class="form-group">
+							<label for="txt_latitude">Latitude</label>
+							<input type="text" name="txt_latitude" class="form-control" id="txt_latitude" placeholder="Latitude">
+						</div>
+						<div class="form-group">
+							<label for="txt_address">Address</label>
+							<input type="text" name="txt_address" class="form-control" id="txt_address" placeholder="Address">
+						</div>
+						<div class="form-group">
+							<label for="txt_noContent">Notification Content</label>
+							<input type="text" name="txt_noContent" class="form-control" id="txt_noContent" placeholder="Notification Content">
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>Close</button>
+						<button type="button" id="btn_submit" class="btn btn-primary" data-dismiss="modal"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span>Save</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal fade" id="notificationModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+						<h4 class="modal-title" id="myModalLabel">Notifications Received</h4>
+					</div>
+					<div class="modal-body">
+						<ul id="notificationList">
+
+						</ul>
+
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal fade" id="subscriptionListModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+						<h4 class="modal-title" id="myModalLabel">Your Subscriptions</h4>
+					</div>
+					<div class="modal-body">
+						<ul id="subscriptionList">
+
+						</ul>
+
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal fade" id="settingModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+						<h4 class="modal-title" id="myModalLabel">Your Subscriptions</h4>
+					</div>
+					<div class="modal-body">
+						<div class="form-group">
+							<label for="txt_username">Username</label>
+							<input type="text" name="txt_username" class="form-control" id="txt_username" placeholder="Username">
+						</div>
+						<div class="form-group">
+							<label for="txt_password">Password</label>
+							<input type="text" name="txt_password" class="form-control" id="txt_password" placeholder="Password">
+						</div>
+						<div class="form-group">
+							<label for="txt_host">Host</label>
+							<input type="text" name="txt_host" class="form-control" id="txt_host" placeholder="Host">
+						</div>
+						<div class="form-group">
+							<label for="txt_port">Port</label>
+							<input type="text" name="txt_port" class="form-control" id="txt_port" placeholder="Port">
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>Close</button>
+						<button type="button" id="btn_save_setting" class="btn btn-primary" data-dismiss="modal"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span>Save</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+	</html>
