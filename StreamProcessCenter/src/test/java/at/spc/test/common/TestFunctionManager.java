@@ -68,6 +68,8 @@ public class TestFunctionManager {
 
     @Test
     public void testParseFunctionMeta() {
+        mockList = new LinkedList();
+        when(mockFunction.getSubFunctions()).thenReturn(mockList);
         FunctionMeta functionMeta = new FunctionMeta();
         functionMeta.setFunctionChainId("testFunctionChainId");
         functionMeta.setFunctionBeanNames(new String[]{"SystemMessageFunction"});
@@ -77,11 +79,13 @@ public class TestFunctionManager {
         when(mockFunction.getFunctionId()).thenReturn("SystemMessageFunction");
         Assert.assertEquals("SystemMessageFunction", functionChain.getFunctionChain().get(0).getFunctionId());
         verify(mockContext, times(3)).getBean(anyString());
-        verify(mockList, times(2)).add(any());
+        Assert.assertEquals(mockList.size(), 2);
         Assert.assertEquals(1, functionChain.getFunctionChain().size());
     }
 
     public void testActivateFunction() {
+        mockList = new LinkedList();
+        when(mockFunction.getSubFunctions()).thenReturn(mockList);
         FunctionChain functionChain = functionManager.parseFunctionMeta(getDeviceEventFunctionMeta());
         functionManager.activateFunction(functionChain);
         verify(topologyBuilder, times(2)).addSource(anyString(), anyString());

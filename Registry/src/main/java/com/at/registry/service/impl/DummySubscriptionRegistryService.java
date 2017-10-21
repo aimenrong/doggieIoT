@@ -18,6 +18,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DummySubscriptionRegistryService implements SubscriptionRegistryService {
     private Map<String, List<SubscriptionBean>> map = new ConcurrentHashMap<String, List<SubscriptionBean>>();
 
+    public void updateSubscriptionNextTriggerTime(String subscriptionId) {
+
+    }
+
+    public void deleteSubscription(String subscriptionId) throws ServiceException {
+
+    }
+
     public List<SubscriptionBean> lookupSubscriptionByDeviceId(String deviceId) {
         if (map.containsKey(deviceId)) {
             return map.get(deviceId);

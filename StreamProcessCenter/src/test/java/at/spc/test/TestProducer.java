@@ -19,7 +19,6 @@ import java.util.Properties;
  */
 public class TestProducer {
 
-    @Test
     public void testProducer() {
         Properties props = new Properties();
         props.put("bootstrap.servers", "localhost:9092");
