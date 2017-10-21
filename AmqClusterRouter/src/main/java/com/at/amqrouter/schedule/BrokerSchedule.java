@@ -45,7 +45,7 @@ public class BrokerSchedule {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BrokerSchedule.class);
 
-    @Scheduled(initialDelay = 1000, fixedDelay = 3000)
+    @Scheduled(initialDelay = 10000, fixedDelay = 3000)
     public void consumeBrokerClusterMessage() {
         List<BrokerServiceComponent> list = fetchRegisteredBrokers(StringUtil.extractServiceId(this.openwireBrokerServiceUrl));
         if (list != null) {

@@ -2,12 +2,16 @@ package com.at.amqrouter.common;
 
 import com.at.amqrouter.aspect.AspectProperties;
 import com.at.amqrouter.bean.CentralConfEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.annotation.*;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -21,9 +25,14 @@ import java.util.Properties;
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 @ComponentScan(basePackages = {"com.at.amqrouter"})
 public class SpringOnLoadConfiguration {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpringOnLoadConfiguration.class);
+    private static final String CONFIG_PATH_KEY = "config.path";
+    private static final String DEFAULT_CENTRAL_PROP_NAME = "central.properties";
+    private static final String DEFAULT_REMOTE_CENTRAL_PROP_NAME = "central-remote.properties";
+
     @Bean("RestTemplate")
     public RestTemplate getRestTemplate() {
-        System.out.println("Create bean RestTemplate");
+        LOGGER.info("Create bean RestTemplate");
         return new RestTemplate();
     }
 
@@ -36,15 +45,20 @@ public class SpringOnLoadConfiguration {
     /****************************************** Central Configuration Support ********************************************/
     @Bean
     public static PropertyPlaceholderConfigurer properties() {
-        String classRootPath = SpringOnLoadConfiguration.class.getResource("/").getPath();
+        String configPath = System.getProperty(CONFIG_PATH_KEY);
+        if (null == configPath) {
+            throw new IllegalArgumentException(String.format("Cannot find the config file"));
+        }
+        String configRootPath = configPath.substring(0, configPath.lastIndexOf("/"));
+
         PropertyPlaceholderConfigurer ppc = new PropertyPlaceholderConfigurer();
-        List<ClassPathResource> resources = new ArrayList<ClassPathResource>();
-        resources.add(new ClassPathResource("router.properties"));
-        Properties spcProperties = getSpcProperties("router.properties");
+        List<Resource> resources = new ArrayList<Resource>();
+        resources.add(new FileSystemResource(configPath));
+        Properties spcProperties = getFileAsProperties(configPath);
         String registryUrl = spcProperties.getProperty("router.registry.url");
         boolean loadFromCentral = Boolean.valueOf(spcProperties.getProperty("router.central.conf.enabled", "false"));
         if (loadFromCentral) {
-            Properties localProperties = getSpcProperties("central.properties");
+            Properties localProperties = getFileAsProperties(DEFAULT_CENTRAL_PROP_NAME);
             Enumeration<Object> it = localProperties.keys();
             Properties centralProperties = new Properties();
             while (it.hasMoreElements()) {
@@ -52,23 +66,23 @@ public class SpringOnLoadConfiguration {
                 String remotePropValue = getRemotePropertyValue(registryUrl, propKey);
                 centralProperties.setProperty(propKey, remotePropValue);
             }
-            storeRemoteToLocal(centralProperties, classRootPath + "/" + "central-remote.properties");
-            resources.add(new ClassPathResource("central-remote.properties"));
+            storeRemoteToLocal(centralProperties, configRootPath + "/" + DEFAULT_REMOTE_CENTRAL_PROP_NAME);
+            resources.add(new FileSystemResource(configRootPath + "/" + DEFAULT_REMOTE_CENTRAL_PROP_NAME));
         } else {
-            System.out.println("Load local properties");
-            resources.add(new ClassPathResource("central.properties"));
+            LOGGER.info("Load local properties");
+            resources.add(new FileSystemResource(configRootPath + "/" + DEFAULT_CENTRAL_PROP_NAME));
         }
-        ppc.setLocations( resources.toArray(new ClassPathResource[0]) );
+        ppc.setLocations( resources.toArray(new FileSystemResource[0]) );
         ppc.setIgnoreUnresolvablePlaceholders( true );
         return ppc;
     }
 
-    private static Properties getSpcProperties(String path) {
+    private static Properties getFileAsProperties(String path) {
         Properties properties = new Properties();
         try {
-            properties.load(new ClassPathResource(path).getInputStream());
+            properties.load(new FileInputStream(new File(path)));
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage(), e);
         }
         return properties;
     }

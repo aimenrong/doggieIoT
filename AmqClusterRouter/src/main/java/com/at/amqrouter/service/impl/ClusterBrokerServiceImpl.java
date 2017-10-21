@@ -64,6 +64,9 @@ public class ClusterBrokerServiceImpl implements ClusterBrokerService {
             return clusterBrokerContainer.get(newKey).getConnection();
         }
         BrokerContainer brokerContainer = (BrokerContainer) RestfulServer.getContext().getBean("BrokerContainer");
+        if (null == brokerContainer) {
+            LOGGER.error("Cannot create bean BrokerContainer");
+        }
         brokerContainer.setBrokerInfo(brokerId, this.openwireBrokerServiceUrl);
         clusterBrokerContainer.put(newKey, brokerContainer);
         return brokerContainer.getConnection();

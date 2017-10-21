@@ -19,10 +19,10 @@ public class RegistryServiceImpl implements RegistryService {
     private RestTemplate restTemplate;
     @Value("${registry.lookup.service.url}")
     private String serviceLookupUrl;
-    @Value("${amqrouter.node.id}")
-    private int routerNodeId;
-    @Value("${amqrouter.subnode.id}")
-    private int routerSubNodeId;
+    @Value("${amqrouter.node.id:0}")
+    private String routerNodeId;
+    @Value("${amqrouter.subnode.id:0}")
+    private String routerSubNodeId;
 
     @Override
     public String resolveRouterService(String serviceId) {

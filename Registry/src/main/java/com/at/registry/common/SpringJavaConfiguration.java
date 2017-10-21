@@ -12,6 +12,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
@@ -32,12 +34,20 @@ public class SpringJavaConfiguration {
     @Value("${registry.database.name:registry}")
     private String registryDb;
 
+    private static final String CONFIG_PATH_KEY = "config.path";
+
     @Bean
     public static PropertyPlaceholderConfigurer properties() {
         LOGGER.info("Start to load place holder...");
+        String configPath = System.getProperty(CONFIG_PATH_KEY);
+        if (null == configPath) {
+            throw new IllegalArgumentException(String.format("Cannot find the config file"));
+        }
+        String configRootPath = configPath.substring(0, configPath.lastIndexOf("/"));
+
         PropertyPlaceholderConfigurer ppc = new PropertyPlaceholderConfigurer();
-        ClassPathResource[] resources = new ClassPathResource[]
-                {new ClassPathResource("registry.properties")};
+        Resource[] resources = new Resource[]
+                {new FileSystemResource(configPath)};
         ppc.setLocations(resources);
         ppc.setIgnoreUnresolvablePlaceholders(true);
         return ppc;

@@ -55,7 +55,7 @@ public class AspectManager {
         Object[] args = proceedingJoinPoint.getArgs();
         if (args[0] instanceof String) {
             if (StreamsConfig.BOOTSTRAP_SERVERS_CONFIG.equals(args[0])) {
-                System.out.println("Aspect to replace the Kafka url");
+                LOGGER.info("Aspect to replace the Kafka url");
                 if (kafkaServiceUrl.equals(args[1])) {
                     String resolvedService = registryService.resolveService(kafkaServiceUrl);
                     args[1] = resolvedService;

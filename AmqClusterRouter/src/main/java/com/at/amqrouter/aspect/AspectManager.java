@@ -36,13 +36,9 @@ public class AspectManager {
     @Resource(name = "KafkaUrlResolver")
     private AliasResolverService kafkaAliasResolverService;
 
-    public AspectManager() {
-        System.out.println("init AspectManager");
-    }
-
     private static final Logger LOGGER = LoggerFactory.getLogger(AspectManager.class);
 
-    @Around("execution(* com.at.amqrouter.broker.BrokerContainer.setBrokerInfo(..))")
+    @Around("execution(* com.at.amqrouter.service.broker.BrokerContainer.setBrokerInfo(..))")
     public void replaceBrokerUrl(ProceedingJoinPoint proceedingJoinPoint) {
         Object[] args = proceedingJoinPoint.getArgs();
         String brokerId = (String) args[0];
@@ -71,7 +67,7 @@ public class AspectManager {
         try {
             proceedingJoinPoint.proceed(args);
         } catch (Throwable e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage(), e);
         }
     }
 
@@ -98,7 +94,7 @@ public class AspectManager {
         try {
             proceedingJoinPoint.proceed(args);
         } catch (Throwable e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage(), e);
         }
     }
 }

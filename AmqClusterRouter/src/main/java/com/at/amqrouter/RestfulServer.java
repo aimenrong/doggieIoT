@@ -9,6 +9,8 @@ import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.servlet.ServletContainer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
@@ -19,6 +21,7 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
  * Created by eyonlig on 9/12/2017.
  */
 public class RestfulServer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RestfulServer.class);
     private static AnnotationConfigWebApplicationContext springContext;
 
     public RestfulServer() throws Exception {
@@ -40,6 +43,10 @@ public class RestfulServer {
         springContext = (AnnotationConfigWebApplicationContext)sc.getServletContext().
                 getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
 
+        if (null == springContext) {
+            LOGGER.warn("Spring Context is null");
+        }
+
         server.join();
 
     }
@@ -50,6 +57,7 @@ public class RestfulServer {
     }
 
     public static void main(String[] args) throws Exception {
+        System.setProperty("config.path", "E:/git/project/doggieIoT/doggieIoT/build/amq-cluster-router/conf/router.properties");
         new RestfulServer();
     }
 

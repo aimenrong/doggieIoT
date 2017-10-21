@@ -28,9 +28,9 @@ public class App {
     }
 
     public static void main(String[] args) {
+//        System.setProperty("config.path", "E:/git/project/doggieIoT/doggieIoT/build/stream-process-center/conf/spc.properties");
         App app = new App();
         app.init();
-//        app.test();
         app.startup();
         while (true) {
             try {
