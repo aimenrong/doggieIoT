@@ -60,7 +60,7 @@ public class TestKafkaUrlResolver {
     public void testResolveWithCache() {
         aliasResolverCacheService.store("KAFKA-SERVICE", serviceComponent);
         ServiceComponent ret = (ServiceComponent) kafkaUrlResolver.resolve("KAFKA-SERVICE");
-        Assert.assertEquals(ret.getServiceNodes().get("0").getSubNodes().get("0").getServiceUrl(), serviceComponent.getServiceNodes().get(0).getSubNodes().get("0").getServiceUrl());
+        Assert.assertEquals(ret.getServiceNodes().get("0").getSubNodes().get("0").getServiceUrl(), serviceComponent.getServiceNodes().get("0").getSubNodes().get("0").getServiceUrl());
         verify(restTemplate, times(0)).getForObject(anyString(), Matchers.<Class<BrokerServiceComponent>> any());
     }
 }
