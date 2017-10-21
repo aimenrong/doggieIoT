@@ -1,0 +1,2 @@
+[2017-10-01 01:04:57,522] WARN Exception causing close of session 0x15ed371ea110000 due to java.io.IOException: 远程主机强迫关闭了一个现有的连接。 (org.apache.zookeeper.server.NIOServerCnxn)
+[2017-10-01 01:04:57,525] INFO Closed socket connection for client /127.0.0.1:56227 which had sessionid 0x15ed371ea110000 (org.apache.zookeeper.server.NIOServerCnxn)
