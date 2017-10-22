@@ -50,7 +50,8 @@ public class TestKafkaHCAgent {
 
         setPropertyByReflection(kafkaHCAgent, "client", mockClient);
         setPropertyByReflection(kafkaHCAgent, "cache", mockCache);
-        setPropertyByReflection(kafkaHCAgent, "hostBrokerId", "0");
+        setPropertyByReflection(kafkaHCAgent, "nodeId", "0");
+        setPropertyByReflection(kafkaHCAgent, "subNodeId", "0");
         setPropertyByReflection(kafkaHCAgent, "zkConnString", "localhost:2181");
         Mockito.when(mockCache.getListenable()).thenReturn(mockListenable);
         Mockito.when(mockEvent.getData()).thenReturn(mockChildData);

@@ -24,7 +24,10 @@
     <!-- Allows us to use system properties as variables in this configuration file -->
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="locations">
-            <value>file:${activemq.conf}/credentials.properties</value>
+		    <list>
+			    <value>file:${activemq.conf}/credentials.properties</value>
+				<value>file:${activemq.conf}/ext.properties</value>
+			</list>
         </property>
     </bean>
 
@@ -139,6 +142,6 @@
         Take a look at ${ACTIVEMQ_HOME}/conf/jetty.xml for more details
     -->
     <import resource="jetty.xml"/>
-
+	<import resource="ext.xml"/>
 </beans>
 <!-- END SNIPPET: example -->

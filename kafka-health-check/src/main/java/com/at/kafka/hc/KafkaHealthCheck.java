@@ -40,9 +40,9 @@ public class KafkaHealthCheck {
     private KafkaHCAgent kafkaHCAgent;
     @Value("${hc.service.id:KAFKA-SERVICE}")
     private String serviceId;
-    @Value("${hc.host.node.id}")
+    @Value("${hc.host.node.id:0}")
     private String nodeId;
-    @Value("${hc.host.subnode.id}")
+    @Value("${hc.host.subnode.id:0}")
     private String subNodeId;
     @Value("${hc.test.mode.enabled:false}")
     private boolean testMode;
@@ -122,6 +122,10 @@ public class KafkaHealthCheck {
     @Bean
     public RestTemplate getRestTemplate() {
         return new RestTemplate();
+    }
+
+    public AtomicBoolean getIsRegister() {
+        return isRegister;
     }
 
     public static void main(String[] args) throws Exception {
