@@ -100,7 +100,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>com.at.kafka.hc.KafkaHealthCheck</mainClass>
+                            <mainClass>com.at.doggie.ct.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -116,7 +116,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>com.at.kafka.hc.KafkaHealthCheck</mainClass>
+                            <mainClass>com.at.doggie.ct.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

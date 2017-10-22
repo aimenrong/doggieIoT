@@ -191,7 +191,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>com.at.kafka.hc.KafkaHealthCheck</mainClass>
+                            <mainClass>at.spc.App</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
