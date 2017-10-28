@@ -7,6 +7,7 @@ import com.at.registry.exception.DaoException;
 import com.at.registry.exception.MongoDaoException;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -17,6 +18,17 @@ public class SubscriptionRegistryMongoDao extends MongoBaseDao<SubscriptionBean>
     public List<SubscriptionBean> lookupSubscriptionsByDeviceId(String deviceId) throws DaoException {
         try {
             List<SubscriptionBean> list = super.findByParam("deviceId", deviceId, SubscriptionBean.class);
+            return list;
+        } catch (MongoDaoException e) {
+            throw new DaoException(e);
+        }
+    }
+
+    @Override
+    public List<SubscriptionBean> lookupExpiredSubscriptionsByDeviceId(String deviceId) throws DaoException {
+        try {
+            List<SubscriptionBean> list = super.findByParamsWithDate(new String[]{"deviceId"}, new String[]{deviceId},
+                    new String[]{"nextTriggerTime"}, new String[]{"<="}, new Date[]{new Date()}, SubscriptionBean.class);
             return list;
         } catch (MongoDaoException e) {
             throw new DaoException(e);

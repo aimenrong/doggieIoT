@@ -8,6 +8,7 @@ import com.at.registry.service.SubscriptionRegistryService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +24,7 @@ public class SimpleSubscriptionRegistryService implements SubscriptionRegistrySe
 
     public List<SubscriptionBean> lookupSubscriptionByDeviceId(String deviceId) throws ServiceException {
         try {
-            return subscriptionRegistryDao.lookupSubscriptionsByDeviceId(deviceId);
+            return subscriptionRegistryDao.lookupExpiredSubscriptionsByDeviceId(deviceId);
         } catch (DaoException e) {
             throw new ServiceException(e);
         }
@@ -31,6 +32,12 @@ public class SimpleSubscriptionRegistryService implements SubscriptionRegistrySe
 
     public void addSubscription(SubscriptionBean subscriptionBean) throws ServiceException {
         try {
+            if (null == subscriptionBean.getCreatedTime()) {
+                subscriptionBean.setCreatedTime(new Date());
+            }
+            if (null == subscriptionBean.getNextTriggerTime()) {
+                subscriptionBean.setNextTriggerTime(new Date());
+            }
             subscriptionRegistryDao.addSubscription(subscriptionBean);
         } catch (DaoException e) {
             throw new ServiceException(e);

@@ -11,6 +11,8 @@ import java.util.List;
 public interface SubscriptionRegistryDao {
     List<SubscriptionBean> lookupSubscriptionsByDeviceId(String deviceId) throws DaoException;
 
+    List<SubscriptionBean> lookupExpiredSubscriptionsByDeviceId(String deviceId) throws DaoException;
+
     void addSubscription(SubscriptionBean subscriptionBean) throws DaoException;
 
     void updateSubscription(SubscriptionBean subscriptionBean) throws DaoException;

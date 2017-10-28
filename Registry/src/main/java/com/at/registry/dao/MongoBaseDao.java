@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.at.registry.exception.MongoDaoException;
 import com.at.registry.util.ClassUtil;
 import com.mongodb.MongoClient;
+import com.mongodb.QueryBuilder;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,8 @@ import org.springframework.stereotype.Component;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 
@@ -25,6 +28,7 @@ public class MongoBaseDao<T> {
     @Autowired
     private MongoOperations mongoOperations;
     private static final String BEAN_PACKAGE_PATH = "com.at.registry.bean";
+    private SimpleDateFormat format =  new SimpleDateFormat( "yyyy-MM-dd HH:mm" );
 
     public void init() {
         try {
@@ -100,6 +104,59 @@ public class MongoBaseDao<T> {
 
     protected List<T> findByParam(String paramName, Object paramValue, Class<T> clazz) throws MongoDaoException {
         return findByParams(new String[]{paramName}, new Object[]{paramValue}, clazz);
+    }
+
+    public List<T> findByParamsWithDate(String[] paramNames, Object[] paramValues, String[] dateParamNames,
+                                        String[] dateOptrs, Date[] dates, Class<T> clazz) throws MongoDaoException {
+        try {
+            Query query = null;
+            Criteria criteria = new Criteria();
+            for (int i = 0; i < paramNames.length; i++) {
+                String fieldName = paramNames[i];
+                ClassUtil.EntityFieldInfo entityFieldInfo = ClassUtil.getEntityFieldInfoByName(fieldName, clazz);
+                if (entityFieldInfo != null) {
+                    if ("meta".equals(fieldName)) {
+                        String convertValue = JSON.toJSONString(paramValues[i]);
+                        criteria.and(entityFieldInfo.modelName).is(convertValue);
+                    } else {
+                        criteria.and(entityFieldInfo.modelName).is(paramValues[i]);
+                    }
+                }
+            }
+            for (int i = 0; i < dateParamNames.length; i++) {
+                String dateParamName = dateParamNames[i];
+                String optr = dateOptrs[i];
+                String dateStr = format.format(dates[i]);
+                Date date = dates[i];
+                ClassUtil.EntityFieldInfo entityFieldInfo = ClassUtil.getEntityFieldInfoByName(dateParamName, clazz);
+                if (entityFieldInfo != null) {
+                    switch (optr) {
+                        case ">=" :
+                            criteria.and(entityFieldInfo.modelName).gte(date);
+                            break;
+                        case ">" :
+                            criteria.and(entityFieldInfo.modelName).gt(date);
+                            break;
+                        case "<=" :
+                            criteria.and(entityFieldInfo.modelName).lte(date);
+                            break;
+                        case "<" :
+                            criteria.and(entityFieldInfo.modelName).lt(date);
+                            break;
+                        case "=" :
+                            criteria.and(entityFieldInfo.modelName).is(date);
+                            break;
+                        default:
+                            criteria.and(entityFieldInfo.modelName).is(date);
+                            break;
+                    }
+                }
+            }
+            query = Query.query(criteria);
+            return mongoOperations.find(query, clazz);
+        } catch (Exception e) {
+            throw new MongoDaoException(e);
+        }
     }
 
     public List<T> findByParams(String[] paramNames, Object[] paramValues, Class<T> clazz) throws MongoDaoException {
