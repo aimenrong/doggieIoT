@@ -39,6 +39,7 @@ public class RestfulServer {
     }
 
     public static void main(String[] args) throws Exception {
+        System.setProperty("config.path", "E:/git/project/doggieIoT/doggieIoT/Registry/src/main/resources/registry.properties");
         new RestfulServer();
     }
 }
