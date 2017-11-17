@@ -56,9 +56,10 @@
 
 				export default {
 					name: 'DoggieContent',
-					mounted: function () {
-						this.init()
-					},
+					created() {
+				      console.log('call created');
+				      
+				     },
 					data () {
 						return {
 							subscriptionModalShow: false,

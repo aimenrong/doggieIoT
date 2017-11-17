@@ -1,26 +1,53 @@
-"use strict";
+'use strict';
 // mqttService.js
-import Settings from '../Settings'
+import settings from '../Settings'
+import eventBus from './eventBus'
 
-var settings = new Settings();
+var client;
+var cid = settings.getCid();
 
 class MqttService {
 	constructor() {
-		this.cid = "terry-js";
-		this.client = null;
+		
 	}
 
-	connect(onMessageArrivedCallback, onConnectionLostCallback) {
+	connect() {
 		console.log('MqttService.connect');
-		if (this.client == null || this.client == undefined || this.client == '') {
-	        this.client = new Paho.MQTT.Client(settings.getHost(), Number(settings.getPort()), this.cid );
-	        this.client.onConnect = onConnect;
-	        this.client.onMessageArrived = onMessageArrived;
-	        this.client.onConnectionLost = onConnectionLost;
-	        this.client.connect({onSuccess: onConnect, onFailure: onFailure, cleanSession:false});
+		if (client == null || client == undefined || client == '') {
+	        client = new Paho.MQTT.Client(settings.getHost(), Number(settings.getPort()), cid);
+	        client.onConnect = this.onConnect;
+	        client.onMessageArrived = this.onMessageArrived;
+	        client.onConnectionLost = this.onConnectionLost;
+	        client.connect({onSuccess: this.onConnect, onFailure: this.onFailure, cleanSession : false});
 	    } else {
 	        alert('Already Connect');
 	    }
+	}
+
+	disconnect() {
+	    client.disconnect();
+	    client = null;
+	}
+
+	onConnect() {
+		console.log("Callback onConnect");
+		client.subscribe("device-notification", {qos:1});
+		eventBus.$emit('onConnect');
+		eventBus.$emit('onConnectAction');
+	}
+
+	onMessageArrived(message) {
+		eventBus.$emit('onMessageArrivedAction', message.payloadString);
+	}
+
+	onFailure() {
+		eventBus.$emit('onFailure');
+		eventBus.$emit('onFailureAction');
+	}
+
+	onConnectionLost() {
+		eventBus.$emit('onConnectionLost');
+		eventBus.$emit('onConnectionLostAction');
 	}
 
 	sendNotification(longitude, latitude, content) {
@@ -36,8 +63,6 @@ class MqttService {
 	        message.destinationName = "device-event";
 	        message.qos = 1;
 	        client.send(message);
-	        $('#subscriptionList').prepend('<li>' + msg + '</li>');
-	        $('#subscriptionListModal').modal();
 	    } catch(e) {
 	        console.error(e)
 	    }

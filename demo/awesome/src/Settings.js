@@ -8,9 +8,10 @@ class Settings {
 		this.cid = "terry-js";
 	}
 
-	saveSettings(host, port) {
+	saveSettings(host, port, clientId) {
 		this.brokerHost = host;
 		this.brokerPort = port;
+		this.cid = clientId;
 	}
 
 	getCid() {
@@ -25,4 +26,4 @@ class Settings {
 		return this.brokerPort;
 	}
 }
-export default Settings
+export default new Settings()
