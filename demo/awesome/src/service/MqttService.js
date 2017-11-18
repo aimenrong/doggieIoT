@@ -59,7 +59,7 @@ class MqttService {
 
 	        var data = {'deviceId' : settings.getCid(), 'longitude' : longitude, 'latitude' : latitude, 'content' : content};
 	        var msg = JSON.stringify(data);
-	        message = new Paho.MQTT.Message(msg);
+	        var message = new Paho.MQTT.Message(msg);
 	        message.destinationName = "device-event";
 	        message.qos = 1;
 	        client.send(message);

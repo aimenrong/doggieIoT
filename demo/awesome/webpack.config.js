@@ -13,7 +13,7 @@ module.exports = {
    app: "./src/App.js",
  },
  externals: {
-  'AMap': 'window.AMap'
+  'AMap': 'AMap'
 },
 output: {
   path: __dirname + '/dist/assets',

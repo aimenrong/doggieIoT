@@ -32,15 +32,15 @@
          {{ notification.content }}
         </b-alert>
         </b-col>
-         </b-row>
+        </b-row>
         
     </b-container>
-            <div slot="modal-footer" class="w-100">
-              <b-btn size="sm" class="float-right m-1" variant="primary" @click="notificationModalShow=false">
-                Close
-              </b-btn>
-            </div>
-          </b-modal>
+    <div slot="modal-footer" class="w-100">
+      <b-btn size="sm" class="float-right m-1" variant="primary" @click="notificationModalShow=false">
+        Close
+      </b-btn>
+    </div>
+  </b-modal>
 
   <b-modal v-model="subscriptionModalShow"
     title="Subscriptions"
@@ -56,19 +56,19 @@
         <b-alert variant="danger"
              dismissible
              :show="subscription.showDismissibleAlert"
-             @dismissed="cleanNotification(subscription.seq)">
+             @dismissed="cleanSubscription(subscription.seq)">
          {{ subscription.content }}
         </b-alert>
         </b-col>
-         </b-row>
+        </b-row>
         
     </b-container>
-            <div slot="modal-footer" class="w-100">
-              <b-btn size="sm" class="float-right m-1" variant="primary" @click="subscriptionModalShow=false">
-                Close
-              </b-btn>
-            </div>
-          </b-modal>
+    <div slot="modal-footer" class="w-100">
+      <b-btn size="sm" class="float-right m-1" variant="primary" @click="subscriptionModalShow=false">
+        Close
+      </b-btn>
+    </div>
+  </b-modal>
 </div>
 </template>
 
@@ -80,7 +80,27 @@ var mqttService = new MqttService();
 export default {
   name: 'DoggieNav',
   created() {
-      console.log('call created');
+      console.log('call DoggieNav created');
+      Date.prototype.format = function(fmt) { 
+          var o = { 
+              "M+" : this.getMonth()+1,
+              "d+" : this.getDate(),
+              "h+" : this.getHours(),
+              "m+" : this.getMinutes(),
+              "s+" : this.getSeconds(), 
+              "q+" : Math.floor((this.getMonth()+3)/3),
+              "S"  : this.getMilliseconds()
+          }; 
+          if(/(y+)/.test(fmt)) {
+                  fmt=fmt.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length)); 
+          }
+          for(var k in o) {
+            if(new RegExp("("+ k +")").test(fmt)){
+              fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
+            }
+          }
+          return fmt; 
+      }
       eventBus.$on('onConnectAction', this.onConnect);
       eventBus.$on('onFailureAction', this.onFailure);
       eventBus.$on('onConnectionLostAction', this.onConnectionLost);
@@ -88,21 +108,21 @@ export default {
         console.log(message);
         var item = {};
         item.seq = this.notificationSeq++;
-        item.content = message;
+        item.content = "[" + new Date().format("yyyy-MM-dd hh:mm:ss") + "] " + message;
         item.showDismissibleAlert = true;
         this.notifications.push(item);
         this.unreadNotifications++;
-        this.$root.$emit('bv::show::tooltip');
+        this.viewNotification();
       });
       eventBus.$on('onSubscriptionCreationAction', sub => {
         var item = {};
         item.seq = this.subscriptionSeq++;
-        item.content = sub;
+        item.content = "[" + new Date().format("yyyy-MM-dd hh:mm:ss") + "] " + sub;
         item.showDismissibleAlert = true;
         this.subscriptions.push(item);
-        
       });
-      this.notificationMenuText = "Notifications <b-badge pill variant='light danger'>" + this.unreadNotifications + "<span class='sr-only'>unread messages</span></b-badge>"
+      this.notificationMenuText = "Notifications";
+      this.connect();
      },
 
   data() {
@@ -123,7 +143,7 @@ export default {
     ],
     subscriptionSeq : 0,
     subscriptionModalShow : false,
-      variants: [
+    variants: [
               'primary','secondary','success','warning','danger','info','light','dark'
               ],
               headerBgVariant: 'dark',
@@ -135,42 +155,38 @@ export default {
     }
   },
   methods : {
-    init() {
-
+    connect : function () {
+      if (this.actionName == 'Connect') {
+        mqttService.connect();
+      } else {
+        mqttService.disconnect();
+      }
     },
-  connect : function (event) {
+    onConnect() {
+      this.actionName = 'Disconnect';
+    },
+    onFailure() {
+      this.actionName = 'Connect';
+    },
+    onConnectionLost() {
+      this.actionName = 'Connect';
+    },
+    viewNotification() {
+      this.unreadNotifications = 0;
+      this.notificationModalShow = true;
+    },
+    cleanNotification(seq) {
+      this.notifications.filter(item => item.seq != seq);
+    },
 
-    if (this.actionName == 'Connect') {
-      mqttService.connect();
-    } else {
-      mqttService.disconnect();
+    viewSubscriptions() {
+      console.log("Call viewSubscriptions");
+      this.subscriptionModalShow = true;
+    },
+
+    cleanSubscription(seq) {
+      this.subscriptions.filter(item => item.seq != seq);
     }
-  },
-  onConnect() {
-    this.actionName = 'Disconnect';
-  },
-  onFailure() {
-    this.actionName = 'Connect';
-  },
-  onConnectionLost() {
-    this.actionName = 'Connect';
-  },
-  viewNotification() {
-    this.unreadNotifications = 0;
-    this.notificationModalShow = true;
-    this.$root.$emit('bv::hide::tooltip');
-  },
-  cleanNotification(seq) {
-    this.notifications.filter(item => item.seq != seq);
-  },
-
-  viewSubscriptions() {
-    this.subscriptionModalShow = true;
-  },
-
-  cleanSubscription() {
-    this.subscriptions.filter(item => item.seq != seq);
-  }
 
   }
 }

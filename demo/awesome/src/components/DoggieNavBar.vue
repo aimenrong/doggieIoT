@@ -1,9 +1,7 @@
 <template>
 <div>
 <b-navbar toggleable="md" type="dark" variant="info">
-
   <b-nav-toggle target="nav_collapse"></b-nav-toggle>
-
   <b-navbar-brand href="#">Doggie</b-navbar-brand>
 
   <b-collapse is-nav id="nav_collapse">
@@ -41,30 +39,30 @@
         <b-col><b-form-input v-model="txtServer"
           type="text"
           placeholder="Enter Server Host">{{ txtServer }}</b-form-input></b-col>
-        </b-row>
-        <b-row class="mb-1">
-          <b-col cols="2">Server Port</b-col>
-          <b-col><b-form-input v-model="txtPort"
-            type="text"
-            placeholder="Enter Server Port">{{ txtPort }}</b-form-input></b-col>
-          </b-row>
-          <b-row>
-            <b-col cols="2">Client ID</b-col>
-            <b-col><b-form-input v-model="txtClientId"
-              type="text"
-              placeholder="Enter Client ID">{{ txtClientId }}</b-form-input></b-col>
-            </b-row>
-            </b-container>
-            <div slot="modal-footer" class="w-100">
-              <b-btn size="sm" class="float-right m-1" variant="primary" @click="settingsModalShow=false">
-                Close
-              </b-btn>
-              <b-btn size="sm" class="float-right m-1" variant="primary" @click="saveAccountSetting">
-                Save
-              </b-btn>
-            </div>
-          </b-modal>
-          </div>
+      </b-row>
+      <b-row class="mb-1">
+        <b-col cols="2">Server Port</b-col>
+        <b-col><b-form-input v-model="txtPort"
+          type="text"
+          placeholder="Enter Server Port">{{ txtPort }}</b-form-input></b-col>
+      </b-row>
+      <b-row>
+        <b-col cols="2">Client ID</b-col>
+        <b-col><b-form-input v-model="txtClientId"
+          type="text"
+          placeholder="Enter Client ID">{{ txtClientId }}</b-form-input></b-col>
+      </b-row>
+    </b-container>
+    <div slot="modal-footer" class="w-100">
+      <b-btn size="sm" class="float-right m-1" variant="primary" @click="settingsModalShow=false">
+        Close
+      </b-btn>
+      <b-btn size="sm" class="float-right m-1" variant="primary" @click="saveAccountSetting">
+        Save
+      </b-btn>
+    </div>
+  </b-modal>
+</div>
 </template>
 
 <script>
@@ -74,38 +72,38 @@ import eventBus from '../service/eventBus'
 export default {
   name: 'DoggieNavBar',
   created() {
-      console.log('call created');
+      console.log('call DoggieNavBar created');
       eventBus.$on('onConnect', this.onConnect);
       eventBus.$on('onFailure', this.onFailure);
       eventBus.$on('onConnectionLost', this.onConnectionLost);
      },
-          methods : {
-            openAccountSetting() {
-              console.log("Call openAccountSetting");
-              this.txtServer = settings.getHost();
-              this.txtPort = settings.getPort();
-              this.txtClientId = settings.getCid();
-              this.settingsModalShow = true;
-            },
-            saveAccountSetting() {
-              console.log("Call saveAccountSetting");
-              settings.saveSettings(this.txtServer, this.txtPort, this.txtClientId);
-              this.settingsModalShow = false;
-            },
-            onConnect() {
-              console.log('call onConnect');
-              this.isConnected = true;
-              this.connectionStatus = 'Connected';
-            },
-            onFailure() {
-              this.isConnected = false;
-              this.connectionStatus = 'Failure';
-            },
-            onConnectionLost() {
-              this.isConnected = false;
-              this.connectionStatus = 'Disconnected';
-            }
-          },
+  methods : {
+    openAccountSetting() {
+      console.log("Call openAccountSetting");
+      this.txtServer = settings.getHost();
+      this.txtPort = settings.getPort();
+      this.txtClientId = settings.getCid();
+      this.settingsModalShow = true;
+    },
+    saveAccountSetting() {
+      console.log("Call saveAccountSetting");
+      settings.saveSettings(this.txtServer, this.txtPort, this.txtClientId);
+      this.settingsModalShow = false;
+    },
+    onConnect() {
+      console.log('call onConnect');
+      this.isConnected = true;
+      this.connectionStatus = 'Connected';
+    },
+    onFailure() {
+      this.isConnected = false;
+      this.connectionStatus = 'Failure';
+    },
+    onConnectionLost() {
+      this.isConnected = false;
+      this.connectionStatus = 'Disconnected';
+    }
+  },
   data() {
     return {
       isConnected : false,
