@@ -41,11 +41,13 @@ class MqttService {
 	}
 
 	onFailure() {
+		client = null;
 		eventBus.$emit('onFailure');
 		eventBus.$emit('onFailureAction');
 	}
 
 	onConnectionLost() {
+		client = null;
 		eventBus.$emit('onConnectionLost');
 		eventBus.$emit('onConnectionLostAction');
 	}

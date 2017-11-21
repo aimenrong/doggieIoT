@@ -12,6 +12,9 @@
   <b-nav-item-dropdown id="nav7_ddown" text="Subscriptions" right>
     <b-dropdown-item v-on:click="viewSubscriptions">View Subscriptions</b-dropdown-item>
   </b-nav-item-dropdown>
+  <b-nav-item-dropdown id="nav7_ddown" text="Tools" right>
+    <b-dropdown-item v-on:click="retrieveMyGps">Retrieve My GPS</b-dropdown-item>
+  </b-nav-item-dropdown>
 </b-nav>
 
 <b-modal v-model="notificationModalShow"
@@ -33,7 +36,6 @@
         </b-alert>
         </b-col>
         </b-row>
-        
     </b-container>
     <div slot="modal-footer" class="w-100">
       <b-btn size="sm" class="float-right m-1" variant="primary" @click="notificationModalShow=false">
@@ -186,6 +188,30 @@ export default {
 
     cleanSubscription(seq) {
       this.subscriptions.filter(item => item.seq != seq);
+    },
+
+    retrieveMyGps() {
+      if ("geolocation" in navigator) {
+        var geo_success = function (position) {
+          console.log(position.coords.latitude);
+          console.log(position.coords.longitude);
+        }
+
+        var geo_error = function () {
+          alert("Sorry, no position available.");
+        }
+
+        var geo_options = {
+          enableHighAccuracy: true, 
+          maximumAge        : 30000, 
+          timeout           : 2000
+        };
+
+        var wpid = navigator.geolocation.watchPosition(geo_success, geo_error, geo_options);
+        console.log(wpid);
+      } else {
+        console.log("GPS not available");
+      }
     }
 
   }
